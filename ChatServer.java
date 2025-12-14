@@ -5,6 +5,11 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class ChatServer{
+private JFrame frame;
+private JTextArea chatArea;
+private JTextField inputField;
+private JButton sendButton;
+
     public static void main(String[]args)throws Exception{
 ServerSocket server=new ServerSocket(5000);
 System.out.println("Waiting...");
