@@ -3,6 +3,7 @@ import java.io.*;
 import java.net.*;
 import javax.swing.*;
 
+
 public class ChatClient {
 
 private JFrame frame;
@@ -12,7 +13,6 @@ private JButton sendButton;
 
 private Socket socket;
 private BufferedReader in;
-private BufferedReader keyboard;
 private PrintWriter out;
 
 private ChatClient() throws Exception {
@@ -20,62 +20,88 @@ private ChatClient() throws Exception {
   StartClient();
 
 }
-      private void buildGUI() {
-        frame = new JFrame("Chat Client");
-        frame.setSize(300, 300);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        chatArea = new JTextArea();
-        chatArea.setEditable(false);
+private void buildGUI() {
+  frame = new JFrame("Chat Client");
+  frame.setSize(300, 300);
+  frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JScrollPane scroll = new JScrollPane(chatArea);
+  chatArea = new JTextArea();
+  chatArea.setEditable(false);
 
-        inputField = new JTextField();
-        sendButton = new JButton("Send");
+  JScrollPane scroll = new JScrollPane(chatArea);
 
-        frame.setLayout(new BorderLayout());
-        frame.add(scroll, BorderLayout.CENTER);
+  inputField = new JTextField();
+  sendButton = new JButton("Send");
 
-        JPanel bottom = new JPanel(new BorderLayout());
-        bottom.add(inputField, BorderLayout.CENTER);
-        bottom.add(sendButton, BorderLayout.EAST);
+  frame.setLayout(new BorderLayout());
+  frame.add(scroll, BorderLayout.CENTER);
 
-        frame.add(bottom, BorderLayout.SOUTH);
+  JPanel bottom = new JPanel(new BorderLayout());
+  bottom.add(inputField, BorderLayout.CENTER);
+  bottom.add(sendButton, BorderLayout.EAST);
 
-        frame.setVisible(true);
+  frame.add(bottom, BorderLayout.SOUTH);
+
+  frame.setVisible(true);
+  sendButton.addActionListener(e -> sendMessage());
+  inputField.addActionListener(e -> sendMessage());
+
+}
+    private void sendMessage() {
+    try {
+        if (out == null) {
+            chatArea.append("Not connected yet.\n");
+            return;
+        }
+
+        String msg = inputField.getText().trim();
+        if (msg.isEmpty()) return;
+
+        out.println(msg);
+        chatArea.append("You: " + msg + "\n");
+        inputField.setText("");
+
+        if (msg.equalsIgnoreCase("exit")) {
+            frame.dispose();
+        }
+
+    } catch (Exception e) {
+        chatArea.append("Send failed\n");
     }
+}
 
-    private void StartClient() throws Exception 
-    {
+
+    private void StartClient() 
+    {new Thread(() -> {
+        try {
        socket=new Socket("localhost",5000);
-       chatArea.append("Connected!");
+       chatArea.append("Connected!\n");
       
       in=new BufferedReader(new InputStreamReader(socket.getInputStream()));
-       keyboard=new BufferedReader(new InputStreamReader(System.in));
+      
       out=new PrintWriter(socket.getOutputStream(),true);
-       String msg1,msg2;
-       while (true) {
-            System.out.print("Type text: ");
-        msg1 = keyboard.readLine();
-            
- 
-            // stop with "exit"
-            if (msg1.equalsIgnoreCase("exit")) {
-                System.out.println("Closing connection...");
-                break;
-            }
-              out.println(msg1);
-            msg2 = in.readLine();
-            System.out.println("From Server: "+msg2);
-          
+        listenFromServer();
 
-            
-    }
-      socket.close();  
-        System.out.println("Client closed.");
-    }
-  
-    public static void main(String[] args) throws Exception {
+        } catch (Exception e) {
+            chatArea.append("Connection failed\n");
+        }
+    }).start();
+}
+private void listenFromServer() {
+    new Thread(() -> {
+        try {
+            String msg;
+            while ((msg = in.readLine()) != null) {
+                chatArea.append("Server: " + msg + "\n");
+            }
+        } catch (Exception e) {
+            chatArea.append("Server disconnected\n");
+        }
+    }).start();
+}
+
+public static void main(String[] args) throws Exception {
       new ChatClient();
       
 }
