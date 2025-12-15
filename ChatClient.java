@@ -10,8 +10,14 @@ private JTextArea chatArea;
 private JTextField inputField;
 private JButton sendButton;
 
-public ChatClient() {
+private Socket socket;
+private BufferedReader in;
+private BufferedReader keyboard;
+private PrintWriter out;
+
+private ChatClient() throws Exception {
   buildGUI();
+  StartClient();
 
 }
       private void buildGUI() {
@@ -38,14 +44,15 @@ public ChatClient() {
 
         frame.setVisible(true);
     }
-  
-    public static void main(String[]args)throws Exception{
-       Socket socket=new Socket("localhost",5000);
-       System.out.println("Connected!"); 
+
+    private void StartClient() throws Exception 
+    {
+       socket=new Socket("localhost",5000);
+       chatArea.append("Connected!");
       
-       BufferedReader in=new BufferedReader(new InputStreamReader(socket.getInputStream()));
-       BufferedReader keyboard=new BufferedReader(new InputStreamReader(System.in));
-       PrintWriter out=new PrintWriter(socket.getOutputStream(),true);
+      in=new BufferedReader(new InputStreamReader(socket.getInputStream()));
+       keyboard=new BufferedReader(new InputStreamReader(System.in));
+      out=new PrintWriter(socket.getOutputStream(),true);
        String msg1,msg2;
        while (true) {
             System.out.print("Type text: ");
@@ -64,7 +71,12 @@ public ChatClient() {
 
             
     }
-      socket.close();  // <-- now it runs
+      socket.close();  
         System.out.println("Client closed.");
+    }
+  
+    public static void main(String[] args) throws Exception {
+      new ChatClient();
+      
 }
 }
