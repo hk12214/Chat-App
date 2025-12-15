@@ -1,14 +1,42 @@
+import java.awt.*;
 import java.io.*;
 import java.net.*;
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
 
-public class ChatServer{
-private JFrame frame;
+public class ChatServer {
+  private JFrame frame;
 private JTextArea chatArea;
 private JTextField inputField;
 private JButton sendButton;
+
+private ChatServer() {
+    buildGUI();
+
+}
+private void buildGUI() {
+    frame = new JFrame("Chat Server");
+    frame.setSize(300, 300);
+ frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+      chatArea = new JTextArea();
+        chatArea.setEditable(false);
+
+        JScrollPane scroll = new JScrollPane(chatArea);
+
+        inputField = new JTextField();
+        sendButton = new JButton("Send");
+
+        frame.setLayout(new BorderLayout());
+        frame.add(scroll, BorderLayout.CENTER);
+
+        JPanel bottom = new JPanel(new BorderLayout());
+        bottom.add(inputField, BorderLayout.CENTER);
+        bottom.add(sendButton, BorderLayout.EAST);
+
+        frame.add(bottom, BorderLayout.SOUTH);
+
+        frame.setVisible(true);
+    }
 
     public static void main(String[]args)throws Exception{
 ServerSocket server=new ServerSocket(5000);
