@@ -1,9 +1,11 @@
+
 import java.awt.*;
 import java.io.*;
 import java.net.*;
 import javax.swing.*;
 
 public class ChatServer {
+
     private JFrame frame;
     private JTextArea chatArea;
     private JTextField inputField;
@@ -17,12 +19,11 @@ public class ChatServer {
     private ChatServer() throws Exception {
         buildGUI();
         StartServer();
-
     }
 
     private void buildGUI() {
         frame = new JFrame("Chat Server");
-        frame.setSize(300, 300);
+        frame.setSize(400, 500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         chatArea = new JTextArea();
@@ -56,20 +57,33 @@ public class ChatServer {
             }
 
             String msg = inputField.getText().trim();
-            if (msg.isEmpty())
+            if (msg.isEmpty()) {
                 return;
+            }
 
             out.println(msg);
-            chatArea.append("You: " + msg + "\n");
+            chatArea.append("You : " + msg + "\n");
             inputField.setText("");
 
             if (msg.equalsIgnoreCase("exit")) {
-
+                close();
                 frame.dispose();
             }
 
         } catch (Exception e) {
             chatArea.append("Send failed\n");
+        }
+    }
+
+    private void close() throws Exception {
+        if (in != null) {
+            in.close();
+        }
+        if (out != null) {
+            out.close();
+        }
+        if (socket != null) {
+            socket.close();
         }
     }
 
@@ -79,7 +93,9 @@ public class ChatServer {
                 server = new ServerSocket(5000);
                 chatArea.append("Waiting for client...\n");
                 socket = server.accept();
+                chatArea.setText("");
                 chatArea.append("Client connected!\n");
+                chatArea.append("Type 'exit' to close the connection .\n");
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
                 out = new PrintWriter(socket.getOutputStream(), true);
@@ -88,6 +104,7 @@ public class ChatServer {
             } catch (Exception e) {
                 chatArea.append("Server error\n");
             }
+
         }).start();
     }
 
@@ -103,12 +120,3 @@ public class ChatServer {
 
     }
 }
-
-
-
-   
-           
-
-           
-
-           
