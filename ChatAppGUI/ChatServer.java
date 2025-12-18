@@ -1,5 +1,6 @@
 
 import java.awt.*;
+import java.awt.event.*;
 import java.io.*;
 import java.net.*;
 import javax.swing.*;
@@ -25,6 +26,12 @@ public class ChatServer {
         frame = new JFrame("Chat Server");
         frame.setSize(400, 500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowclosing(WindowEvent e) throws Exception {
+                close();
+                frame.dispose();
+            }
+        });
 
         chatArea = new JTextArea();
         chatArea.setEditable(false);
@@ -50,29 +57,20 @@ public class ChatServer {
     }
 
     private void sendMessage() {
-        try {
-            if (out == null) {
-                chatArea.append("No client connected yet.\n");
-                return;
-            }
 
-            String msg = inputField.getText().trim();
-            if (msg.isEmpty()) {
-                return;
-            }
-
-            out.println(msg);
-            chatArea.append("You : " + msg + "\n");
-            inputField.setText("");
-
-            if (msg.equalsIgnoreCase("exit")) {
-                close();
-                frame.dispose();
-            }
-
-        } catch (Exception e) {
-            chatArea.append("Send failed\n");
+        if (out == null) {
+            chatArea.append("No client connected yet.\n");
+            return;
         }
+
+        String msg = inputField.getText().trim();
+        if (msg.isEmpty()) {
+            return;
+        }
+
+        out.println(msg);
+        chatArea.append("You : " + msg + "\n");
+        inputField.setText("");
     }
 
     private void close() throws Exception {
@@ -95,9 +93,7 @@ public class ChatServer {
                 socket = server.accept();
                 chatArea.setText("");
                 chatArea.append("Client connected!\n");
-                chatArea.append("Type 'exit' to close the connection .\n");
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
                 out = new PrintWriter(socket.getOutputStream(), true);
                 listenFromClient();
 
@@ -109,10 +105,16 @@ public class ChatServer {
     }
 
     private void listenFromClient() throws Exception {
-        String msg;
-        while ((msg = in.readLine()) != null) {
-            chatArea.append("Client: " + msg + "\n");
-        }
+        new Thread(() -> {
+            try {
+                String msg;
+                while ((msg = in.readLine()) != null) {
+                   chatArea.append("Client: " + msg + "\n");
+                }
+            } catch (Exception e) {
+                chatArea.append("Client disconnected.\n");
+            }
+        }).start();
     }
 
     public static void main(String[] args) throws Exception {
