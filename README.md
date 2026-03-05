@@ -33,7 +33,7 @@ This project was built to practice **network programming, multithreading, and GU
 ## Project Structure
 
 ```
-ChatappGUI
+ChatAppGUI
 │
 ├── ChatServer.java
 └── ChatClient.java
